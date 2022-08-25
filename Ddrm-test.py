@@ -2,7 +2,8 @@ import numpy as np
 from Client import Client
 from Server import Server
 from sklearn.metrics import mean_squared_error
-
+import mmh3
+from WrappedServer import WrappedServer
 
 epsilon = 1
 clientsCount = 10000
@@ -10,10 +11,22 @@ changeRounds = 10
 numberOfChangesDebug = 0
 sparcity = 0.75
 error = []
-clientsValues = np.random.randint(2, size=(clientsCount))
+Data = ['contrary', 'popular', 'belief', 'lorem', 'ipsum', 'simply', 'random', 'text', 'latin', 'literature']
+hashedSize = 12
+hashedValues = dict()
+numberOfHashFunctionsInBloomFilter = 4
+poolBloomFilter = []
+for i in Data:
+    hashedValue = np.zeros(hashedSize)
+    for j in range(numberOfHashFunctionsInBloomFilter):
+        hashedValue[mmh3.hash(i, j) % hashedSize] = 1    
+    hashedValues[i] = hashedValue
+    poolBloomFilter.append(hashedValue)
+print(hashedValues)
+clientsValues = np.random.choice(Data, size=(clientsCount))
 clients = [Client(epsilon) for i in range(clientsCount)]
-server = Server(epsilon)
-realF = np.zeros(changeRounds)
+WServer = WrappedServer(hashedSize, epsilon);
+realF = np.zeros([changeRounds, hashedSize])
 
 for i in range(changeRounds):
     for j in range(clientsCount):
@@ -21,29 +34,27 @@ for i in range(changeRounds):
         valueChangedP = np.random.rand()
         if valueChangedP >= sparcity:
             numberOfChangesDebug += 1
-            clientsValues[j] = (clientsValues[j] + 1) % 2
-        [v, h] = clients[j].report(clientsValues[j])
-        server.newValue(v, h)
-        realF[i] += clientsValues[j]
-    server.predicate()
+            clientsValues[j] = np.random.choice(Data)
+        [v, h] = clients[j].report(hashedValues[clientsValues[j]][j % hashedSize])
+        WServer.newValue(v, h, j%hashedSize)
+        realF[i][j % hashedSize] += hashedValues[clientsValues[j]][j % hashedSize]
+    WServer.predicate()
 
-realF /= clientsCount
-result = server.finish()
-#Remove dummy data.
-result.reverse()
-result.pop()
-result.reverse()
+realF /= (clientsCount/hashedSize)
+result = WServer.finish()
+
 
 print(realF)
 print(result)
 print(numberOfChangesDebug)
 
-for index in range(changeRounds):  # calculating errors
-    error.append((result[index] - realF[index]) / realF[index] * 100)
-    print(index, "-> Estimated:", result[index], " Real:", realF[index], " Error: %", int(error[-1]))
+# for index in range(changeRounds):  # calculating errors
+#     error.append((result[index] - realF[index]) / realF[index] * 100)
+#     print(index, "-> Estimated:", result[index], " Real:", realF[index], " Error: %", int(error[-1]))
 
-print("Avg Error: %", np.mean(error))
-print("Min Squared Error:", mean_squared_error(realF, result))
+# print("Avg Error: %", np.mean(error))
+for i in range(changeRounds):
+    print(f"Min Squared Error at {i}'th iteration:", mean_squared_error(realF[i], result[i]))
 
 
 
