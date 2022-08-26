@@ -11,22 +11,11 @@ changeRounds = 10
 numberOfChangesDebug = 0
 sparcity = 0.75
 error = []
-Data = ['contrary', 'popular', 'belief', 'lorem', 'ipsum', 'simply', 'random', 'text', 'latin', 'literature']
-hashedSize = 12
-hashedValues = dict()
-numberOfHashFunctionsInBloomFilter = 4
-poolBloomFilter = []
-for i in Data: 
-    hashedValue = np.zeros(hashedSize)
-    for j in range(numberOfHashFunctionsInBloomFilter):
-        hashedValue[mmh3.hash(i, j) % hashedSize] = 1    
-    hashedValues[i] = hashedValue
-    poolBloomFilter.append(hashedValue)
-print(hashedValues)
-clientsValues = np.random.choice(Data, size=(clientsCount))
+M = 12
+clientsValues = np.random.randint(2**M, size=clientsCount)
 clients = [Client(epsilon) for i in range(clientsCount)]
-WServer = WrappedServer(hashedSize, epsilon);
-realF = np.zeros([changeRounds, hashedSize])
+WServer = WrappedServer(M, epsilon);
+realF = np.zeros([changeRounds, M])
 
 for i in range(changeRounds):
     for j in range(clientsCount):
@@ -34,13 +23,15 @@ for i in range(changeRounds):
         valueChangedP = np.random.rand()
         if valueChangedP >= sparcity:
             numberOfChangesDebug += 1
-            clientsValues[j] = np.random.choice(Data)
-        [v, h] = clients[j].report(hashedValues[clientsValues[j]][j % hashedSize])
-        WServer.newValue(v, h, j%hashedSize)
-        realF[i][j % hashedSize] += hashedValues[clientsValues[j]][j % hashedSize]
+            clientsValues[j] = np.random.randint(2**M)
+        toReport = f'{clientsValues[j]:0{M}b}'[j % M]
+        toReport = int(toReport)
+        [v, h] = clients[j].report(toReport)
+        WServer.newValue(v, h, j%M)
+        realF[i][j % M] += toReport
     WServer.predicate()
 
-realF /= (clientsCount/hashedSize)
+realF /= (clientsCount/M)
 result = WServer.finish()
 
 
