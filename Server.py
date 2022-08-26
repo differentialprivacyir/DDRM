@@ -75,7 +75,8 @@ class Server:
             w = self.computeW()
         else:
             w = 0.5 #Just to neutralize its effect.
-        self.f.append(w * self.f1 + (1 - w) * self.f2)
+        freq = w * self.f1 + (1 - w) * self.f2
+        self.f.append(freq)
         varF = self.computeVariance()
         self.varianceF.append(varF)
         #Reset state of server.
@@ -84,4 +85,5 @@ class Server:
         self.sumVOfh = 0
         self.sumOfUsersOfh = 0
     def finish(self):
+        self.f = np.clip(self.f, 0, 1)
         return self.f
