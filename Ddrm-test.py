@@ -16,7 +16,7 @@ hashedSize = 12
 hashedValues = dict()
 numberOfHashFunctionsInBloomFilter = 4
 poolBloomFilter = []
-for i in Data:
+for i in Data: 
     hashedValue = np.zeros(hashedSize)
     for j in range(numberOfHashFunctionsInBloomFilter):
         hashedValue[mmh3.hash(i, j) % hashedSize] = 1    
