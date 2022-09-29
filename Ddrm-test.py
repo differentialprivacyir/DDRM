@@ -24,6 +24,7 @@ for epsilon in range(10):
     testMean = 0
 
     for i in range(changeRounds):
+        clientsValues = dataset[:, i]
         for j in range(clientsCount):
             testMean += clientsValues[j]
             newValue = np.zeros(M)
@@ -34,8 +35,6 @@ for epsilon in range(10):
             WServer.newValue(v, h, j%M)
             realF[i][j % M] += toReport
         WServer.predicate()
-        day += 1
-        clientsValues = dataset[:, day]
 
     realF /= (clientsCount/M)
     result = WServer.finish()
@@ -46,7 +45,6 @@ for epsilon in range(10):
 
     realMean = 0
     outputMean = 0
-    sumOfAllRoundsEstimations = 0
 
     for index, row in enumerate(realF):
         for index2, number in enumerate(row):
@@ -56,17 +54,12 @@ for epsilon in range(10):
         for index2, number in enumerate(row):
             outputMean += (number * index2)
 
-
-    for number in result[19]:
-        sumOfAllRoundsEstimations += number
-
     realMean /= changeRounds
     outputMean /= changeRounds
 
 
     print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
     print("Global Mean difference:", abs(realMean - outputMean))
-    print("Sum of all estimated frequencies:", sumOfAllRoundsEstimations)
 
     # print("Avg Error: %", np.mean(error))
     for i in range(changeRounds):
