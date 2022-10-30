@@ -20,50 +20,29 @@ for epsilon in range(10):
     clientsValues = dataset[:, day]
     clients = [Client(epsilon) for i in range(clientsCount)]
     WServer = WrappedServer(M, epsilon)
-    realF = np.zeros([changeRounds, M])
-    testMean = 0
+    realMean = np.array([])
 
     for i in range(changeRounds):
         clientsValues = dataset[:, i]
+        realMean = np.append(realMean,clientsValues)
         for j in range(clientsCount):
-            testMean += clientsValues[j]
             newValue = np.zeros(M)
             newValue[clientsValues[j]] = 1
-            toReport = newValue[j % M]
-            toReport = int(toReport)
+            toReport = int(newValue[j % M])
             [v, h] = clients[j].report(toReport)
-            WServer.newValue(v, h, j%M)
-            realF[i][j % M] += toReport
+            WServer.newValue(v, h, j % M)
         WServer.predicate()
 
-    realF /= (clientsCount/M)
     result = WServer.finish()
+    outputMean = np.zeros(changeRounds)
 
-    # for index in range(changeRounds):  # calculating errors
-    #     error.append((result[index] - realF[index]) / realF[index] * 100)
-    #     print(index, "-> Estimated:", result[index], " Real:", realF[index], " Error: %", int(error[-1]))
-
-    realMean = 0
-    outputMean = 0
-
-    for index, row in enumerate(realF):
-        for index2, number in enumerate(row):
-            realMean += (number*(clientsCount/M) * index2)
-        realMean /= clientsCount
-
-    for index, row in enumerate(result):
-        for index2, number in enumerate(row):
-            outputMean += (number*(clientsCount/M) * index2)
-        outputMean /= clientsCount
-
-    realMean /= changeRounds
-    outputMean /= changeRounds
-
+    for i in range(changeRounds):
+        for j in range(M):
+            outputMean[i] += result[i][j] * (j+1)
 
     print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
-    print("Global Mean difference:", abs(realMean - outputMean))
+    print("Global Mean difference:", abs(realMean - np.mean(outputMean)))
 
-    # print("Avg Error: %", np.mean(error))
     for i in range(changeRounds):
         print(f"Min Squared Error at {i}'th iteration:", mean_squared_error(realF[i], result[i]))
 
