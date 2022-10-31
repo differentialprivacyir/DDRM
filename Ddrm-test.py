@@ -49,15 +49,15 @@ for epsilon in range(10):
     for index, row in enumerate(realF):
         for index2, number in enumerate(row):
             realMean += (number*(clientsCount/M) * index2)
-        realMean /= clientsCount
+    realMean /= (clientsCount*changeRounds)
 
     for index, row in enumerate(result):
         for index2, number in enumerate(row):
             outputMean += (number*(clientsCount/M) * index2)
-        outputMean /= clientsCount
+    outputMean /= (clientsCount*changeRounds)
 
-    realMean /= changeRounds
-    outputMean /= changeRounds
+    # realMean /= changeRounds
+    # outputMean /= changeRounds
 
 
     print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
