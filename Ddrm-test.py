@@ -15,19 +15,28 @@ clients = [Client(epsilon) for i in range(clientsCount)]
 WServer = WrappedServer(M, epsilon)
 realF = np.zeros([changeRounds, M])
 testMean = 0
+numberMean = np.zeros(changeRounds * clientsCount)
+selectedNumbers = np.zeros(changeRounds * clientsCount)
 
 for i in range(changeRounds):
     for j in range(clientsCount):
         #Determine if we should change data or not:
         clientsValues[j] = np.random.randint(M)
+        numberMean[i*clientsCount + j] = clientsValues[j]
         testMean += clientsValues[j]
         newValue = np.zeros(M)
         newValue[clientsValues[j]] = 1
         toReport = newValue[j % M]
         toReport = int(toReport)
+        if toReport == 1:
+            selectedNumbers[i*clientsCount + j] = clientsValues[j]
+        else:
+            selectedNumbers[i*clientsCount + j] = 0
         [v, h] = clients[j].report(toReport)
         WServer.newValue(v, h, j%M)
         realF[i][j % M] += toReport
+    print(np.sum(selectedNumbers))
+    print(np.sum(numberMean))
     WServer.predicate()
 
 realF /= (clientsCount/M)
@@ -43,11 +52,13 @@ sumOfAllRoundsEstimations = 0
 
 for index, row in enumerate(realF):
     for index2, number in enumerate(row):
-        realMean += (number * index2)
+        realMean += (number*(clientsCount/M) * index2)
+    realMean /= clientsCount
 
 for index, row in enumerate(result):
     for index2, number in enumerate(row):
-        outputMean += (number * index2)
+        outputMean += (number*(clientsCount/M) * index2)
+    outputMean /= clientsCount
 
 
 for number in result[19]:
@@ -59,6 +70,10 @@ outputMean /= changeRounds
 
 print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
 print("Global Mean difference:", abs(realMean - outputMean))
+print("Result Mean:", outputMean)
+print("Real Mean:", realMean)
+print("Mean of numbers:", np.mean(numberMean))
+print("Mean of sean values by server:", np.mean(selectedNumbers))
 print("Sum of all estimated frequencies:", sumOfAllRoundsEstimations)
 
 # print("Avg Error: %", np.mean(error))
