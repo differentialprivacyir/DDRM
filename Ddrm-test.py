@@ -29,8 +29,7 @@ for epsilon in range(10):
             testMean += clientsValues[j]
             newValue = np.zeros(M)
             newValue[clientsValues[j]] = 1
-            toReport = newValue[j % M]
-            toReport = int(toReport)
+            toReport = int(newValue[j % M])
             [v, h] = clients[j].report(toReport)
             WServer.newValue(v, h, j%M)
             realF[i][j % M] += toReport
