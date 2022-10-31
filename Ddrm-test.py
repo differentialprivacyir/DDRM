@@ -35,8 +35,22 @@ for i in range(changeRounds):
         [v, h] = clients[j].report(toReport)
         WServer.newValue(v, h, j%M)
         realF[i][j % M] += toReport
-    print(np.sum(selectedNumbers))
-    print(np.sum(numberMean))
+    # print("Sum of selected:", np.sum(selectedNumbers[i*clientsCount:i*clientsCount+clientsCount]))
+    # print("Real sum:", np.sum(numberMean))
+    # summationOfBits = 0
+    # for index, val in enumerate(realF[i]):
+    #     summationOfBits += val * index
+    # print("Sum of server form:", summationOfBits);
+    # print("Mean of selected: ", np.mean(selectedNumbers[i*clientsCount: i*clientsCount+clientsCount]));
+    # testMean = realF[i].copy()
+    # testMean /= (clientsCount/M)
+    # summationOfBits = 0
+    # for index2, number in enumerate(testMean):
+    #     summationOfBits += (number*(clientsCount/M) * index2)
+    # print("Sum of server form:", summationOfBits);
+    # summationOfBits /= clientsCount
+    # print( "Mean of server form:", summationOfBits)
+
     WServer.predicate()
 
 realF /= (clientsCount/M)
@@ -53,19 +67,16 @@ sumOfAllRoundsEstimations = 0
 for index, row in enumerate(realF):
     for index2, number in enumerate(row):
         realMean += (number*(clientsCount/M) * index2)
-    realMean /= clientsCount
+realMean /= (clientsCount*changeRounds)
 
 for index, row in enumerate(result):
     for index2, number in enumerate(row):
         outputMean += (number*(clientsCount/M) * index2)
-    outputMean /= clientsCount
+outputMean /= (clientsCount*changeRounds)
 
 
 for number in result[19]:
     sumOfAllRoundsEstimations += number
-
-realMean /= changeRounds
-outputMean /= changeRounds
 
 
 print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
