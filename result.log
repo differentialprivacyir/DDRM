@@ -1,0 +1,27 @@
+Consumed Differential Privacy Budget: 100
+Global Mean difference: 0.05599430509968878
+Result Mean: 0.5401663050996888
+Real Mean: 0.484172
+Mean of numbers: 15.5028265
+Mean of sean values by server: 0.484172
+Sum of all estimated frequencies: 1.0389684168428273
+Min Squared Error at 0'th iteration: 0.00036201241591529894
+Min Squared Error at 1'th iteration: 0.0002579995344709143
+Min Squared Error at 2'th iteration: 0.0005031491825717078
+Min Squared Error at 3'th iteration: 0.00033762300178153846
+Min Squared Error at 4'th iteration: 0.0005522467140136125
+Min Squared Error at 5'th iteration: 0.0004376701613444086
+Min Squared Error at 6'th iteration: 0.0005220592332659845
+Min Squared Error at 7'th iteration: 0.0005652727505896209
+Min Squared Error at 8'th iteration: 0.0006328858232875417
+Min Squared Error at 9'th iteration: 0.000604313467640708
+Min Squared Error at 10'th iteration: 0.0007379027884885366
+Min Squared Error at 11'th iteration: 0.0008478528771211711
+Min Squared Error at 12'th iteration: 0.0009450412141604869
+Min Squared Error at 13'th iteration: 0.0006123950623819393
+Min Squared Error at 14'th iteration: 0.0009596813446269438
+Min Squared Error at 15'th iteration: 0.000524840477511973
+Min Squared Error at 16'th iteration: 0.0006108563894957615
+Min Squared Error at 17'th iteration: 0.000449018989780988
+Min Squared Error at 18'th iteration: 0.0006363797412569467
+Min Squared Error at 19'th iteration: 0.0005090392420333383
