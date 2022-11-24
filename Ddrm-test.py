@@ -6,10 +6,10 @@ import mmh3
 from WrappedServer import WrappedServer
 import math
 
-epsilon = 5
+epsilon = 1
 clientsCount = 5000
 changeRounds = 20
-M = 32
+M = 1000
 clientsValues = np.random.randint(M, size=clientsCount)
 #clients = [Client(epsilon) for i in range(clientsCount)]
 clients = np.ndarray(shape=(clientsCount, M), dtype=Client)
