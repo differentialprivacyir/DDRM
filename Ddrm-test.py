@@ -7,11 +7,15 @@ from WrappedServer import WrappedServer
 import math
 
 epsilon = 5
-clientsCount = 100000
+clientsCount = 5000
 changeRounds = 20
 M = 32
 clientsValues = np.random.randint(M, size=clientsCount)
-clients = [Client(epsilon) for i in range(clientsCount)]
+#clients = [Client(epsilon) for i in range(clientsCount)]
+clients = np.ndarray(shape=(clientsCount, M), dtype=Client)
+for i in range(clientsCount):
+    for j in range(M):
+        clients[i][j] = Client(epsilon)
 WServer = WrappedServer(M, epsilon)
 realF = np.zeros([changeRounds, M])
 testMean = 0
@@ -26,15 +30,16 @@ for i in range(changeRounds):
         testMean += clientsValues[j]
         newValue = np.zeros(M)
         newValue[clientsValues[j]] = 1
-        toReport = newValue[j % M]
-        toReport = int(toReport)
-        if toReport == 1:
-            selectedNumbers[i*clientsCount + j] = clientsValues[j]
-        else:
-            selectedNumbers[i*clientsCount + j] = 0
-        [v, h] = clients[j].report(toReport)
-        WServer.newValue(v, h, j%M)
-        realF[i][j % M] += toReport
+        for k in range(M):
+            toReport = newValue[k]
+            toReport = int(toReport)
+            # if toReport == 1:
+            #     selectedNumbers[i*clientsCount + j] = clientsValues[j]
+            # else:
+            #     selectedNumbers[i*clientsCount + j] = 0
+            [v, h] = clients[j][k].report(toReport)
+            WServer.newValue(v, h, k)
+            realF[i][k] += toReport
     # print("Sum of selected:", np.sum(selectedNumbers[i*clientsCount:i*clientsCount+clientsCount]))
     # print("Real sum:", np.sum(numberMean))
     # summationOfBits = 0
@@ -53,7 +58,7 @@ for i in range(changeRounds):
 
     WServer.predicate()
 
-realF /= (clientsCount/M)
+realF /= (clientsCount)
 result = WServer.finish()
 
 # for index in range(changeRounds):  # calculating errors
@@ -66,12 +71,12 @@ sumOfAllRoundsEstimations = 0
 
 for index, row in enumerate(realF):
     for index2, number in enumerate(row):
-        realMean += (number*(clientsCount/M) * index2)
+        realMean += (number*(clientsCount) * index2)
 realMean /= (clientsCount*changeRounds)
 
 for index, row in enumerate(result):
     for index2, number in enumerate(row):
-        outputMean += (number*(clientsCount/M) * index2)
+        outputMean += (number*(clientsCount) * index2)
 outputMean /= (clientsCount*changeRounds)
 
 
