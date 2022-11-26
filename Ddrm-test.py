@@ -64,12 +64,12 @@ for epsilon in range(10):
 
     for index, row in enumerate(realF):
         for index2, number in enumerate(row):
-            realMean += (number*(clientsCount) * 2 ** index2)
+            realMean += (number*(clientsCount) * 2 ** (len(row) - 1 - index2))
     realMean /= (clientsCount*changeRounds)
 
     for index, row in enumerate(result):
         for index2, number in enumerate(row):
-            outputMean += (number*(clientsCount) * 2 ** index2)
+            outputMean += (number*(clientsCount) * 2 ** (len(row) - 1 - index2))
     outputMean /= (clientsCount*changeRounds)
 
     # realMean /= changeRounds
