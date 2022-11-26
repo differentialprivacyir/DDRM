@@ -57,9 +57,10 @@ for i in range(changeRounds):
     # print("Sum of server form:", summationOfBits);
     # summationOfBits /= clientsCount
     # print( "Mean of server form:", summationOfBits)
-
+    # print(clientsValues)
     WServer.predicate()
 
+# print(realF)
 realF /= (clientsCount)
 result = WServer.finish()
 
@@ -73,16 +74,16 @@ sumOfAllRoundsEstimations = 0
 
 for index, row in enumerate(realF):
     for index2, number in enumerate(row):
-        realMean += (number*(clientsCount) * 2**index2)
+        realMean += (number*(clientsCount) * (2** (len(row) - 1 - index2)))
 realMean /= (clientsCount*changeRounds)
 
 for index, row in enumerate(result):
     for index2, number in enumerate(row):
-        outputMean += (number*(clientsCount) * 2**  index2)
+        outputMean += (number*(clientsCount) * (2**  (len(row) - 1 -index2)))
 outputMean /= (clientsCount*changeRounds)
 
 
-for number in result[19]:
+for number in result[changeRounds - 1]:
     sumOfAllRoundsEstimations += number
 
 
