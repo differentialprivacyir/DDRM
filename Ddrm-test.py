@@ -10,14 +10,15 @@ epsilon = 1
 clientsCount = 5000
 changeRounds = 20
 M = 1000
+numberOfBits = math.floor(math.log2(M)) + 1
 clientsValues = np.random.randint(M, size=clientsCount)
 #clients = [Client(epsilon) for i in range(clientsCount)]
-clients = np.ndarray(shape=(clientsCount, M), dtype=Client)
+clients = np.ndarray(shape=(clientsCount, numberOfBits), dtype=Client)
 for i in range(clientsCount):
-    for j in range(M):
+    for j in range(numberOfBits):
         clients[i][j] = Client(epsilon)
-WServer = WrappedServer(M, epsilon)
-realF = np.zeros([changeRounds, M])
+WServer = WrappedServer(numberOfBits, epsilon)
+realF = np.zeros([changeRounds, numberOfBits])
 testMean = 0
 numberMean = np.zeros(changeRounds * clientsCount)
 selectedNumbers = np.zeros(changeRounds * clientsCount)
@@ -28,9 +29,10 @@ for i in range(changeRounds):
         clientsValues[j] = np.random.randint(M)
         numberMean[i*clientsCount + j] = clientsValues[j]
         testMean += clientsValues[j]
-        newValue = np.zeros(M)
-        newValue[clientsValues[j]] = 1
-        for k in range(M):
+        binaryRepresentation = f'{clientsValues[j]:0{numberOfBits}b}'
+        # newValue = np.zeros(numberOfBits)
+        newValue = [c for c in binaryRepresentation]
+        for k in range(numberOfBits):
             toReport = newValue[k]
             toReport = int(toReport)
             # if toReport == 1:
@@ -71,12 +73,12 @@ sumOfAllRoundsEstimations = 0
 
 for index, row in enumerate(realF):
     for index2, number in enumerate(row):
-        realMean += (number*(clientsCount) * index2)
+        realMean += (number*(clientsCount) * 2**index2)
 realMean /= (clientsCount*changeRounds)
 
 for index, row in enumerate(result):
     for index2, number in enumerate(row):
-        outputMean += (number*(clientsCount) * index2)
+        outputMean += (number*(clientsCount) * 2**  index2)
 outputMean /= (clientsCount*changeRounds)
 
 
