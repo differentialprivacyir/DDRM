@@ -17,14 +17,15 @@ for epsilon in range(10):
     changeRounds = len(dataset[0])
     day = 0 # The i'th day of processing.
     M = 1000 # The maximum value which can appear.
+    numberOfBits = math.floor(math.log2(M)) + 1
     clientsValues = dataset[:, day]
     # clients = [Client(epsilon) for i in range(clientsCount)]
-    clients = np.ndarray(shape=(clientsCount, M), dtype=Client)
+    clients = np.ndarray(shape=(clientsCount, numberOfBits), dtype=Client)
     for i in range(clientsCount):
-        for j in range(M):
+        for j in range(numberOfBits):
             clients[i][j] = Client(epsilon)
-    WServer = WrappedServer(M, epsilon)
-    realF = np.zeros([changeRounds, M])
+    WServer = WrappedServer(numberOfBits, epsilon)
+    realF = np.zeros([changeRounds, numberOfBits])
     testMean = 0
 
     numberMean = np.zeros(changeRounds * clientsCount)
@@ -36,9 +37,11 @@ for epsilon in range(10):
             numberMean[i*clientsCount + j] = clientsValues[j]
 
             testMean += clientsValues[j]
-            newValue = np.zeros(M)
-            newValue[clientsValues[j]] = 1
-            for k in range(M):
+            binaryRepresentation = f'{clientsValues[j]:0{numberOfBits}b}'
+            # newValue = np.zeros(M)
+            # newValue[clientsValues[j]] = 1
+            newValue = [c for c in binaryRepresentation]
+            for k in range(numberOfBits):
                 toReport = int(newValue[k])
                 # if toReport == 1:
                 #     selectedNumbers[i*clientsCount + j] = clientsValues[j]
@@ -61,12 +64,12 @@ for epsilon in range(10):
 
     for index, row in enumerate(realF):
         for index2, number in enumerate(row):
-            realMean += (number*(clientsCount) * index2)
+            realMean += (number*(clientsCount) * 2 ** index2)
     realMean /= (clientsCount*changeRounds)
 
     for index, row in enumerate(result):
         for index2, number in enumerate(row):
-            outputMean += (number*(clientsCount) * index2)
+            outputMean += (number*(clientsCount) * 2 ** index2)
     outputMean /= (clientsCount*changeRounds)
 
     # realMean /= changeRounds
