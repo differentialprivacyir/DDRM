@@ -75,8 +75,15 @@ for epsilon in range(10):
     # realMean /= changeRounds
     # outputMean /= changeRounds
 
+    changes = np.ndarray(shape=(clientsCount, numberOfBits))
+    maximum = 0
+    for i in range(clientsCount):
+        for j in range(numberOfBits):
+            changes[i][j] = clients[i][j].howManyChanges()
+            if changes[i][j] > maximum:
+                maximum = changes[i][j]
 
-    print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
+    print('Maximum consumed Differential Privacy Budget:', epsilon * maximum)
     print("Global Mean difference:", abs(realMean - outputMean))
     print("Output Mean is:", outputMean)
     print("Mean of bits is:", realMean)
