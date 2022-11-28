@@ -17,6 +17,7 @@ class Client:
         self.t = 0
         self.m_t_1 = 0
         self.epsilon = epsilon
+        self.changes = 0
 
     def newValue(self, v):
         self.t = self.t + 1
@@ -29,6 +30,8 @@ class Client:
                     if j > self.a_m_t \
                     else np.sum(previousR[0:j]) + v-self.previousValue \
                     for j  in range(a_1 + 1)]
+        if self.previousValue != v:
+            self.changes+=1
         self.previousValue = v
 
     def select(self):
@@ -58,4 +61,6 @@ class Client:
         [v, h] = self.select()
         v = self.perturbation(v)
         return [v, h]
+    def howManyChanges(self):
+        return self.changes
 

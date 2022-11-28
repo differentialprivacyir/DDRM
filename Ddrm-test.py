@@ -7,9 +7,9 @@ from WrappedServer import WrappedServer
 import math
 
 epsilon = 1
-clientsCount = 5000
+clientsCount = 20
 changeRounds = 20
-M = 1000
+M = 5
 numberOfBits = math.floor(math.log2(M)) + 1
 clientsValues = np.random.randint(M, size=clientsCount)
 #clients = [Client(epsilon) for i in range(clientsCount)]
@@ -87,7 +87,17 @@ for number in result[changeRounds - 1]:
     sumOfAllRoundsEstimations += number
 
 
-print('Consumed Differential Privacy Budget:', epsilon * changeRounds)
+changes = np.ndarray(shape=(clientsCount, numberOfBits))
+maximum = 0
+for i in range(clientsCount):
+    for j in range(numberOfBits):
+        changes[i][j] = clients[i][j].howManyChanges()
+        if changes[i][j] > maximum:
+            maximum = changes[i][j]
+
+print(changes, maximum);
+
+print('Maximum Consumed Differential Privacy Budget:', epsilon * maximum)
 print("Global Mean difference:", abs(realMean - outputMean))
 print("Result Mean:", outputMean)
 print("Real Mean:", realMean)
