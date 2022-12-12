@@ -1,6 +1,7 @@
 import numpy as np
 from Client import Client
 from Server import Server
+from WrappedClient import WrappeedClient
 from sklearn.metrics import mean_squared_error
 import mmh3
 from WrappedServer import WrappedServer
@@ -19,12 +20,14 @@ for epsilon in range(10):
     M = 1000 # The maximum value which can appear.
     numberOfBits = math.floor(math.log2(M)) + 1
     clientsValues = dataset[:, day]
+    # print(np.mean(dataset))
     # clients = [Client(epsilon) for i in range(clientsCount)]
-    clients = np.ndarray(shape=(clientsCount, numberOfBits), dtype=Client)
-    for i in range(clientsCount):
-        for j in range(numberOfBits):
-            clients[i][j] = Client(epsilon)
+    # clients = np.ndarray(shape=(clientsCount, numberOfBits), dtype=Client)
+    # for i in range(clientsCount):
+    #     for j in range(numberOfBits):
+    #         clients[i][j] = Client(epsilon)
     WServer = WrappedServer(numberOfBits, epsilon)
+    WClient = [WrappeedClient(numberOfBits, epsilon) for i in range(clientsCount)]
     realF = np.zeros([changeRounds, numberOfBits])
     testMean = 0
 
@@ -37,35 +40,31 @@ for epsilon in range(10):
             numberMean[i*clientsCount + j] = clientsValues[j]
 
             testMean += clientsValues[j]
-            binaryRepresentation = f'{clientsValues[j]:0{numberOfBits}b}'
-            # newValue = np.zeros(M)
-            # newValue[clientsValues[j]] = 1
-            newValue = [c for c in binaryRepresentation]
-            for k in range(numberOfBits):
-                toReport = int(newValue[k])
-                # if toReport == 1:
-                #     selectedNumbers[i*clientsCount + j] = clientsValues[j]
-                # else:
-                #     selectedNumbers[i*clientsCount + j] = 0
-                [v, h] = clients[j][k].report(toReport)
-                WServer.newValue(v, h, k)
-                realF[i][k] += toReport
+            [allV, allH] = WClient[j].report(clientsValues[j])
+            for k in range(len(allV)):
+                WServer.newValue(allV[k], allH[k], k)
+            # binaryRepresentation = f'{clientsValues[j]:0{numberOfBits}b}'
+            # # newValue = np.zeros(M)
+            # # newValue[clientsValues[j]] = 1
+            # newValue = [c for c in binaryRepresentation]
+            # for k in range(numberOfBits):
+            #     toReport = int(newValue[k])
+            #     # if toReport == 1:
+            #     #     selectedNumbers[i*clientsCount + j] = clientsValues[j]
+            #     # else:
+            #     #     selectedNumbers[i*clientsCount + j] = 0
+            #     [v, h] = clients[j][k].report(toReport)
+            #     WServer.newValue(v, h, k)
+            #     realF[i][k] += toReport
         WServer.predicate()
 
-    realF /= (clientsCount)
     result = WServer.finish()
-
+    print(numberMean)
     # for index in range(changeRounds):  # calculating errors
     #     error.append((result[index] - realF[index]) / realF[index] * 100)
     #     print(index, "-> Estimated:", result[index], " Real:", realF[index], " Error: %", int(error[-1]))
 
-    realMean = 0
     outputMean = 0
-
-    for index, row in enumerate(realF):
-        for index2, number in enumerate(row):
-            realMean += (number*(clientsCount) * 2 ** (len(row) - 1 - index2))
-    realMean /= (clientsCount*changeRounds)
 
     for index, row in enumerate(result):
         for index2, number in enumerate(row):
@@ -75,18 +74,12 @@ for epsilon in range(10):
     # realMean /= changeRounds
     # outputMean /= changeRounds
 
-    changes = np.ndarray(shape=(clientsCount, numberOfBits))
-    maximum = 0
-    for i in range(clientsCount):
-        for j in range(numberOfBits):
-            changes[i][j] = clients[i][j].howManyChanges()
-            if changes[i][j] > maximum:
-                maximum = changes[i][j]
+    clientsChanges = [WClient[i].howManyChanges() for i in range(clientsCount)]
+    maximum = np.max(clientsChanges);
 
     print('Maximum consumed Differential Privacy Budget:', epsilon * maximum)
-    print("Global Mean difference:", abs(realMean - outputMean))
+    print("Global Mean difference:", abs(np.mean(numberMean) - outputMean))
     print("Output Mean is:", outputMean)
-    print("Mean of bits is:", realMean)
     print("Mean of generated numbers:", np.mean(numberMean))
     print("Mean of sean values by server:", np.mean(selectedNumbers))
 
