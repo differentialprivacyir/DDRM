@@ -1,5 +1,4 @@
 import json
-import mmh3
 import numpy as np
 from Server import Server
 
