@@ -19,7 +19,7 @@ dataSet = np.transpose(csvContent.to_numpy())
 # Overal Algorithm Execution Rounds:
 OAER =50
 # Number of rounds to get reports by server:
-ROUND_CHANGES = 2
+ROUND_CHANGES = 20
 levels = [0.1, 0.3, 0.5, 0.7, 0.9]
 averageMSE = [[0] * ROUND_CHANGES for i in levels]
 averageMAE = [[0] * ROUND_CHANGES for i in levels]
@@ -42,7 +42,7 @@ for oaer in range(OAER):
     M = 2 ** DATA_SET_SIZE - 1
     numberOfBits = DATA_SET_SIZE
     Wservers = [WrappedServer(numberOfBits, eps) for eps in levels]
-    WClient = [WrappeedClient(numberOfBits, clientSelectedLevel[i]) for i in range(clientsCount)]
+    WClient = [WrappeedClient(numberOfBits, levels[clientSelectedLevel[i]]) for i in range(clientsCount)]
 
     realF = np.zeros([changeRounds, numberOfBits])
     testMean = 0
@@ -74,8 +74,6 @@ for oaer in range(OAER):
     estimations = [0] * len(levels)
     for serverIndex in range(len(Wservers)):
         estimations[serverIndex] = Wservers[serverIndex].finish()
-        print(serverIndex, estimations[serverIndex])
-    exit(0)
 
     frequencies = []
     for singleRound in dataSet:
