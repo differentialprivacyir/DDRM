@@ -18,9 +18,11 @@ class Client:
         self.m_t_1 = 0
         self.epsilon = epsilon
         self.changes = 0
+        self.budgetConsumed = False
 
     def newValue(self, v):
         self.t = self.t + 1
+        self.budgetConsumed = False
         aArray = leafNodesPerTree(self.t)
         aArray = aArray.astype(np.int64)
         previousR = self.R.copy()
@@ -46,11 +48,13 @@ class Client:
     def perturbation(self, v):
         rand = np.random.random()
         if v == 0:
+            self.budgetConsumed = False
             if rand < 0.5:
                 return 1
             else:
                 return -1
         else:
+            self.budgetConsumed = True
             setToOneP = 0.5 + (v/2) * ( (math.exp(self.epsilon) - 1)/(math.exp(self.epsilon) + 1) )
             if rand < setToOneP:
                 return 1
@@ -63,4 +67,6 @@ class Client:
         return [v, h]
     def howManyChanges(self):
         return self.changes
+    def budgetConsumptionInLastReport(self):
+        return self.budgetConsumed
 
