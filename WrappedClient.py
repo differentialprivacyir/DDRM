@@ -25,3 +25,5 @@ class WrappeedClient:
         return [allV, allH]
     def howManyChanges(self):
         return self.changes
+    def budgetConsumption(self):
+        return self.changes * self.epsilon

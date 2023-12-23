@@ -117,7 +117,7 @@ for oaer in range(OAER):
             averageME[levelIndex][r] = (averageME[levelIndex][r] * oaer + abs(estimatedMean - meanOfRounds[r]))/(oaer+1)
             outputMean[r].append(estimatedMean)        
     print("Estimated Means are:", outputMean)
-    budgets = [WClient[i].howManyChanges() for i in range(clientsCount)]
+    budgets = [WClient[i].budgetConsumption() for i in range(clientsCount)]
     maxBudget = (maxBudget * oaer + np.max(budgets))/(oaer + 1)
     minBudget = (minBudget * oaer + np.min(budgets))/(oaer + 1)
     avgBudget = (avgBudget * oaer + np.mean(budgets))/(oaer + 1)
