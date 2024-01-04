@@ -21,9 +21,9 @@ OAER =50
 # Number of rounds to get reports by server:
 ROUND_CHANGES = 20
 levels = [0.1, 0.3, 0.5, 0.7, 0.9]
-averageMSE = [[0] * ROUND_CHANGES for i in levels]
-averageMAE = [[0] * ROUND_CHANGES for i in levels]
-averageME = [[0] * ROUND_CHANGES for i in levels]
+averageMSE = []
+averageMAE = []
+averageME = []
 maxBudget = 0
 minBudget = 0
 avgBudget = 0
@@ -35,7 +35,7 @@ for oaer in range(OAER):
     # (Each bit is responsible for a separate value)
     DATA_SET_SIZE = 8
     POPULATION_SIZE_AT_EACH_LEVEL = int(N/len(levels))
-    clientSelectedLevel = [0] * int(N/len(levels)) + [1] * int(N/len(levels)) + [2] * int(N/len(levels)) + [3] * int(N/len(levels)) + [4] * int(N/len(levels))
+    clientSelectedLevel = [0] * int(N/len(levels)) + [0] * int(N/len(levels)) + [0] * int(N/len(levels)) + [0] * int(N/len(levels)) + [0] * int(N/len(levels))
     # Prepare to keep results of estimations:
     startRoundTime = time()
 
@@ -44,7 +44,7 @@ for oaer in range(OAER):
     day = 0
     M = 2 ** DATA_SET_SIZE - 1
     numberOfBits = DATA_SET_SIZE
-    Wservers = [WrappedServer(numberOfBits, eps) for eps in levels]
+    Wserver = WrappedServer(numberOfBits, levels[0])
     WClient = [WrappeedClient(numberOfBits, levels[clientSelectedLevel[i]]) for i in range(clientsCount)]
 
     realF = np.zeros([changeRounds, numberOfBits])
@@ -60,13 +60,12 @@ for oaer in range(OAER):
             testMean += dataSet[i][j]
             [allV, allH] = WClient[j].report(dataSet[i][j])
             for k in range(len(allV)):
-                Wservers[clientSelectedLevel[j]].newValue(allV[k], allH[k], k)
+                Wserver.newValue(allV[k], allH[k], k)
             # print(j, dataSet[i][j], clientSelectedLevel[j])
         endTimestamp = time()
         print(f'Clients reported at {(endTimestamp-startTimestamp)/60} minutes')
         startTimestamp = time()
-        for Wserver in Wservers:
-            Wserver.predicate()
+        Wserver.predicate()
         endTimestamp = time()
         print(f'Server estimated at {(endTimestamp-startTimestamp)/60} minutes')
         startTimestamp = time()
@@ -74,9 +73,7 @@ for oaer in range(OAER):
     endRoundTime = time()
     print(f'Round took {(endRoundTime - startRoundTime) / 60} minutes.')
     
-    estimations = [0] * len(levels)
-    for serverIndex in range(len(Wservers)):
-        estimations[serverIndex] = Wservers[serverIndex].finish()
+    estimations = Wserver.finish()
 
     frequencies = []
     for singleRound in dataSet:
@@ -90,15 +87,13 @@ for oaer in range(OAER):
     for r in range(ROUND_CHANGES):
         print(f'\n\n\n ========================================== \nResults of Round {r}:\n==========================================')
         error = []
-        for levelIndex in range(len(levels)):
-            print(f'Evaluation for level eps = {levels[levelIndex]}')
-            for i, _ in enumerate(normalized[r]):  # calculating errors
-                error.append(abs(estimations[levelIndex][r][i] - normalized[r][i]) * 100)
-                print("index:", i, "-> Estimated:", estimations[levelIndex][r][i], " Real:", normalized[r][i], " Error: %", int(error[-1]))
-            print("Global Mean Square Error:", mean_squared_error(normalized[r], estimations[levelIndex][r]))
-            print("Global Mean Absolute Error:", mean_absolute_error(normalized[r], estimations[levelIndex][r]))
-            averageMSE[levelIndex][r] = (averageMSE[levelIndex][r] * oaer + mean_squared_error(normalized[r], estimations[levelIndex][r]))/(oaer+1)
-            averageMAE[levelIndex][r] = (averageMAE[levelIndex][r] * oaer + mean_absolute_error(normalized[r], estimations[levelIndex][r]))/(oaer+1)
+        for i, _ in enumerate(normalized[r]):  # calculating errors
+            error.append(abs(estimations[r][i] - normalized[r][i]) * 100)
+            print("index:", i, "-> Estimated:", estimations[r][i], " Real:", normalized[r][i], " Error: %", int(error[-1]))
+        print("Global Mean Square Error:", mean_squared_error(normalized[r], estimations[r]))
+        print("Global Mean Absolute Error:", mean_absolute_error(normalized[r], estimations[r]))
+        averageMSE[r] = (averageMSE[r] * oaer + mean_squared_error(normalized[r], estimations[r]))/(oaer+1)
+        averageMAE[r] = (averageMAE[r] * oaer + mean_absolute_error(normalized[r], estimations[r]))/(oaer+1)
 
     meanOfRounds = np.mean(dataSet, axis=1)
     print('Real mean of rounds is:', meanOfRounds)
@@ -108,14 +103,13 @@ for oaer in range(OAER):
     outputMean = []
     for r in range(ROUND_CHANGES):
         outputMean.append([])
-        for levelIndex in range(len(levels)):
-            estimatedMean = 0
-            for index2, number in enumerate(estimations[levelIndex][r]):
-                estimatedMean += (number*(POPULATION_SIZE_AT_EACH_LEVEL) * 2 ** (len(estimations[levelIndex][r]) - 1 - index2))
-            estimatedMean /= POPULATION_SIZE_AT_EACH_LEVEL
-            print(f'Mean Difference at round {r} and level {levels[levelIndex]}:', abs(estimatedMean - meanOfRounds[r]))
-            averageME[levelIndex][r] = (averageME[levelIndex][r] * oaer + abs(estimatedMean - meanOfRounds[r]))/(oaer+1)
-            outputMean[r].append(estimatedMean)        
+        estimatedMean = 0
+        for index2, number in enumerate(estimations[r]):
+            estimatedMean += (number*(POPULATION_SIZE_AT_EACH_LEVEL) * 2 ** (len(estimations[r]) - 1 - index2))
+        estimatedMean /= POPULATION_SIZE_AT_EACH_LEVEL
+        print(f'Mean Difference at round {r}:', abs(estimatedMean - meanOfRounds[r]))
+        averageME[r] = (averageME[r] * oaer + abs(estimatedMean - meanOfRounds[r]))/(oaer+1)
+        outputMean[r].append(estimatedMean)        
     print("Estimated Means are:", outputMean)
     budgets = [WClient[i].budgetConsumption() for i in range(clientsCount)]
     maxBudget = (maxBudget * oaer + np.max(budgets))/(oaer + 1)
