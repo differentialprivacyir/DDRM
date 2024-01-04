@@ -21,9 +21,9 @@ OAER =50
 # Number of rounds to get reports by server:
 ROUND_CHANGES = 20
 levels = [0.1, 0.3, 0.5, 0.7, 0.9]
-averageMSE = []
-averageMAE = []
-averageME = []
+averageMSE = [0] * ROUND_CHANGES
+averageMAE = [0] * ROUND_CHANGES
+averageME = [0] * ROUND_CHANGES
 maxBudget = 0
 minBudget = 0
 avgBudget = 0
